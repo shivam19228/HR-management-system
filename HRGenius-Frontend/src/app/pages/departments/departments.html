@@ -1,0 +1,246 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">Departments</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Manage functional divisions, codes, and leadership</p>
+    </div>
+
+    <button
+      (click)="openAddModal()"
+      class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Department
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+    <button (click)="clearAlerts()" class="text-emerald-700 hover:text-emerald-900 font-bold">&times;</button>
+  </div>
+
+  <div *ngIf="errorMessage" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button (click)="clearAlerts()" class="text-rose-700 hover:text-rose-900 font-bold">&times;</button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+    <div class="relative w-full">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search departments by name, code, manager or description..."
+        class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+    </div>
+  </div>
+
+  <!-- Departments Table -->
+  <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+          <tr>
+            <th class="px-5 py-3.5">Department ID</th>
+            <th class="px-5 py-3.5">Name</th>
+            <th class="px-5 py-3.5">Code</th>
+            <th class="px-5 py-3.5">Manager</th>
+            <th class="px-5 py-3.5">Description</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr *ngFor="let dep of filteredDepartments" class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-5 py-3.5 font-bold text-slate-900">{{ dep.departmentId }}</td>
+            <td class="px-5 py-3.5 font-semibold text-slate-900">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 font-bold text-[11px] flex items-center justify-center shrink-0">
+                  {{ dep.code.substring(0, 2) }}
+                </div>
+                <span>{{ dep.name }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200 text-[11px]">
+                {{ dep.code }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 font-medium text-slate-800">{{ dep.manager }}</td>
+            <td class="px-5 py-3.5 text-slate-500 max-w-xs truncate" [title]="dep.description">
+              {{ dep.description }}
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <!-- View -->
+                <button
+                  (click)="viewDepartment(dep)"
+                  title="View Details"
+                  class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+
+                <!-- Edit -->
+                <button
+                  (click)="openEditModal(dep)"
+                  title="Edit Department"
+                  class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+
+                <!-- Delete -->
+                <button
+                  (click)="deleteDepartment(dep.id, dep.name)"
+                  title="Delete Department"
+                  class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredDepartments.length === 0">
+            <td colspan="6" class="text-center py-10 text-slate-400">
+              No department records match your search.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+      <span>{{ filteredDepartments.length }} department(s) registered</span>
+      <span class="font-medium text-slate-700">HRGenius Organization</span>
+    </div>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div *ngIf="showForm" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="bg-gradient-to-r from-slate-900 to-blue-950 px-6 py-4 text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold">{{ isEditing ? 'Edit Department' : 'Create Department' }}</h3>
+          <p class="text-xs text-blue-300">Set department code, manager, and description</p>
+        </div>
+        <button (click)="showForm = false" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Department ID</label>
+          <input
+            type="text"
+            [(ngModel)]="departmentForm.departmentId"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Department Name *</label>
+          <input
+            type="text"
+            [(ngModel)]="departmentForm.name"
+            placeholder="e.g. Quality Assurance"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Department Code *</label>
+          <input
+            type="text"
+            [(ngModel)]="departmentForm.code"
+            placeholder="e.g. QA-06"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Manager Name</label>
+          <input
+            type="text"
+            [(ngModel)]="departmentForm.manager"
+            placeholder="e.g. Robert Miller"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Description</label>
+          <textarea
+            rows="3"
+            [(ngModel)]="departmentForm.description"
+            placeholder="Role and responsibilities of this department"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end gap-2.5">
+        <button
+          type="button"
+          (click)="showForm = false"
+          class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors">
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="saveDepartment()"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer">
+          {{ isEditing ? 'Save Changes' : 'Save Department' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div *ngIf="showViewModal && selectedDepartment" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white border border-white/30 mb-2">
+          {{ selectedDepartment.code }}
+        </span>
+        <h3 class="text-xl font-bold">{{ selectedDepartment.name }}</h3>
+        <p class="text-blue-100 text-xs mt-1">Managed by {{ selectedDepartment.manager }}</p>
+      </div>
+
+      <div class="p-6 space-y-3.5 text-xs text-slate-700">
+        <div>
+          <span class="text-slate-400 block font-medium">Department ID</span>
+          <span class="font-bold text-slate-900 text-sm">{{ selectedDepartment.departmentId }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Description</span>
+          <p class="mt-1 leading-relaxed text-slate-600">{{ selectedDepartment.description || 'No description provided.' }}</p>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button (click)="closeViewModal()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-700">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

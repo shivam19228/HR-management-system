@@ -1,0 +1,286 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">Daily Attendance</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Track employee check-in times, work hours, and punch records</p>
+    </div>
+
+    <button
+      (click)="openAddModal()"
+      class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Mark Attendance
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+    <button (click)="clearAlerts()" class="text-emerald-700 hover:text-emerald-900 font-bold">&times;</button>
+  </div>
+
+  <div *ngIf="errorMessage" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button (click)="clearAlerts()" class="text-rose-700 hover:text-rose-900 font-bold">&times;</button>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+    <div class="relative flex-1 w-full">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Filter by employee name, date or remarks..."
+        class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+    </div>
+
+    <div class="w-full sm:w-40">
+      <select
+        [(ngModel)]="statusFilter"
+        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <option value="All">All Attendance</option>
+        <option value="Present">Present</option>
+        <option value="Late">Late</option>
+        <option value="Half Day">Half Day</option>
+        <option value="Absent">Absent</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+          <tr>
+            <th class="px-5 py-3.5">Employee</th>
+            <th class="px-5 py-3.5">Date</th>
+            <th class="px-5 py-3.5">Check In</th>
+            <th class="px-5 py-3.5">Check Out</th>
+            <th class="px-5 py-3.5">Status</th>
+            <th class="px-5 py-3.5">Remarks</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr *ngFor="let att of filteredAttendance" class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-5 py-3.5 font-semibold text-slate-900">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center justify-center shrink-0">
+                  {{ att.employee.charAt(0) }}
+                </div>
+                <span>{{ att.employee }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 text-slate-600">{{ att.date }}</td>
+            <td class="px-5 py-3.5 font-medium text-slate-800">{{ att.checkIn }}</td>
+            <td class="px-5 py-3.5 font-medium text-slate-800">{{ att.checkOut }}</td>
+            <td class="px-5 py-3.5">
+              <span
+                class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                [ngClass]="{
+                  'bg-emerald-50 text-emerald-700 border border-emerald-200': att.status === 'Present',
+                  'bg-amber-50 text-amber-700 border border-amber-200': att.status === 'Late',
+                  'bg-blue-50 text-blue-700 border border-blue-200': att.status === 'Half Day',
+                  'bg-rose-50 text-rose-700 border border-rose-200': att.status === 'Absent'
+                }">
+                {{ att.status }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-slate-500">{{ att.remarks || '—' }}</td>
+            <td class="px-5 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <!-- View -->
+                <button
+                  (click)="viewAttendance(att)"
+                  title="View Record"
+                  class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+
+                <!-- Edit -->
+                <button
+                  (click)="openEditModal(att)"
+                  title="Edit Record"
+                  class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+
+                <!-- Delete -->
+                <button
+                  (click)="deleteAttendance(att.id)"
+                  title="Delete Entry"
+                  class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredAttendance.length === 0">
+            <td colspan="7" class="text-center py-10 text-slate-400">
+              No attendance records found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+      <span>{{ filteredAttendance.length }} record(s) logged</span>
+      <span class="font-medium text-slate-700">HRGenius Attendance System</span>
+    </div>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div *ngIf="showForm" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="bg-gradient-to-r from-slate-900 to-teal-950 px-6 py-4 text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold">{{ isEditing ? 'Edit Attendance Log' : 'Mark Attendance' }}</h3>
+          <p class="text-xs text-teal-300">Record check-in time and status</p>
+        </div>
+        <button (click)="showForm = false" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Employee *</label>
+          <select
+            [(ngModel)]="attendanceForm.employee"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500">
+            <option *ngFor="let emp of employees" [value]="emp.name">{{ emp.name }} ({{ emp.department }})</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
+          <input
+            type="date"
+            [(ngModel)]="attendanceForm.date"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Check In Time</label>
+            <input
+              type="text"
+              [(ngModel)]="attendanceForm.checkIn"
+              placeholder="09:00 AM"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Check Out Time</label>
+            <input
+              type="text"
+              [(ngModel)]="attendanceForm.checkOut"
+              placeholder="05:30 PM"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Status</label>
+          <select
+            [(ngModel)]="attendanceForm.status"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500">
+            <option value="Present">Present</option>
+            <option value="Late">Late</option>
+            <option value="Half Day">Half Day</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Remarks</label>
+          <input
+            type="text"
+            [(ngModel)]="attendanceForm.remarks"
+            placeholder="e.g. Approved half-day or transit delay"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-teal-500" />
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end gap-2.5">
+        <button
+          type="button"
+          (click)="showForm = false"
+          class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors">
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="saveAttendance()"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer">
+          {{ isEditing ? 'Save Changes' : 'Log Attendance' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div *ngIf="showViewModal && selectedAttendance" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white text-center">
+        <h3 class="text-xl font-bold">{{ selectedAttendance.employee }}</h3>
+        <p class="text-emerald-100 text-xs mt-1">Attendance on {{ selectedAttendance.date }}</p>
+        <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white border border-white/30">
+          {{ selectedAttendance.status }}
+        </span>
+      </div>
+
+      <div class="p-6 space-y-3.5 text-xs text-slate-700">
+        <div class="grid grid-cols-2 gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <span class="text-slate-400 block font-medium">Check In</span>
+            <span class="font-bold text-slate-900">{{ selectedAttendance.checkIn }}</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block font-medium">Check Out</span>
+            <span class="font-bold text-slate-900">{{ selectedAttendance.checkOut }}</span>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block font-medium">Remarks</span>
+          <p class="mt-1 text-slate-800">{{ selectedAttendance.remarks || 'Standard log' }}</p>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button (click)="closeViewModal()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-700">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
